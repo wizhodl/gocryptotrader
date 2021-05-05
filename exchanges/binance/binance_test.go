@@ -2497,3 +2497,14 @@ func TestWsOutboundAccountPosition(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestFuturesTransfer(t *testing.T) {
+	if !areTestAPIKeysSet() {
+		t.Skip("skipping test: api keys not set")
+	}
+
+	_, err := b.TransferFuturesAsset("USDT", 1.23, FuturesTranferTypeSpotToUFuture)
+	if err != nil {
+		t.Fatal(err)
+	}
+}

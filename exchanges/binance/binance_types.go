@@ -812,3 +812,17 @@ type update struct {
 type job struct {
 	Pair currency.Pair
 }
+
+type FuturesTransferResponse struct {
+	Msg    string `json:"msg"`
+	TranId int64  `json:"tranId"`
+}
+
+type FuturesTranferType int
+
+var (
+	FuturesTranferTypeSpotToUFuture = FuturesTranferType(1)
+	FuturesTranferTypeUFutureToSpot = FuturesTranferType(2)
+	FuturesTranferTypeSpotToFuture  = FuturesTranferType(3)
+	FuturesTranferTypeFutureToSpot  = FuturesTranferType(4)
+)

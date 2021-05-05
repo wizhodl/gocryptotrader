@@ -52,10 +52,11 @@ const (
 	perpExchangeInfo  = "/fapi/v1/exchangeInfo"
 
 	// Authenticated endpoints
-	newOrderTest  = "/api/v3/order/test"
-	orderEndpoint = "/api/v3/order"
-	openOrders    = "/api/v3/openOrders"
-	allOrders     = "/api/v3/allOrders"
+	newOrderTest    = "/api/v3/order/test"
+	orderEndpoint   = "/api/v3/order"
+	openOrders      = "/api/v3/openOrders"
+	allOrders       = "/api/v3/allOrders"
+	futuresTransfer = "/sapi/v1/futures/transfer"
 
 	// Withdraw API endpoints
 	withdrawEndpoint                       = "/wapi/v3/withdraw.html"
@@ -999,4 +1000,24 @@ func (b *Binance) FetchSpotExchangeLimits() ([]order.MinMaxLevel, error) {
 		}
 	}
 	return limits, nil
+}
+
+// TransferFuturesAsset transfer asset between spot and futures
+func (b *Binance) TransferFuturesAsset(assetStr string, amount float64, tranferType FuturesTranferType) (int64, error) {
+	var resp FuturesTransferResponse
+
+	params := url.Values{}
+	params.Set("asset", assetStr)
+	params.Set("amount", strconv.FormatFloat(amount, 'f', -1, 64))
+	params.Set("type", strconv.FormatInt(int64(tranferType), 10))
+
+	if err := b.SendAuthHTTPRequest(exchange.RestSpotSupplementary, http.MethodPost, futuresTransfer, params, spotDefaultRate, &resp); err != nil {
+		return 0, err
+	}
+
+	if resp.TranId == 0 {
+		return 0, errors.New(resp.Msg)
+	}
+
+	return resp.TranId, nil
 }
