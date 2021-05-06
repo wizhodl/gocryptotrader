@@ -768,6 +768,9 @@ func (b *Binance) SubmitOrder(s *order.Submit) (order.SubmitResponse, error) {
 		}
 
 		timeInForce := BinanceRequestParamsTimeGTC
+		if s.ImmediateOrCancel {
+			timeInForce = BinanceRequestParamsTimeIOC
+		}
 		var requestParamsOrderType RequestParamsOrderType
 		switch s.Type {
 		case order.Market:
@@ -840,8 +843,14 @@ func (b *Binance) SubmitOrder(s *order.Submit) (order.SubmitResponse, error) {
 		default:
 			return submitOrderResponse, errors.New("invalid type, check api docs for updates")
 		}
+
+		timeInForce := BinanceRequestParamsTimeGTC
+		if s.ImmediateOrCancel {
+			timeInForce = BinanceRequestParamsTimeIOC
+		}
+
 		order, err := b.FuturesNewOrder(s.Pair, reqSide,
-			"", oType, "GTC", "",
+			"", oType, string(timeInForce), "",
 			s.ClientOrderID, "", "",
 			s.Amount, s.Price, 0, 0, 0, s.ReduceOnly)
 		if err != nil {
@@ -878,8 +887,14 @@ func (b *Binance) SubmitOrder(s *order.Submit) (order.SubmitResponse, error) {
 		default:
 			return submitOrderResponse, errors.New("invalid type, check api docs for updates")
 		}
+
+		timeInForce := BinanceRequestParamsTimeGTC
+		if s.ImmediateOrCancel {
+			timeInForce = BinanceRequestParamsTimeIOC
+		}
+
 		order, err := b.UFuturesNewOrder(s.Pair, reqSide,
-			"", oType, "GTC", "",
+			"", oType, string(timeInForce), "",
 			s.ClientOrderID, "", "",
 			s.Amount, s.Price, 0, 0, 0, s.ReduceOnly)
 		if err != nil {
