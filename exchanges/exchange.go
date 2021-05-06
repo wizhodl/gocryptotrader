@@ -1302,3 +1302,7 @@ func (a *AssetWebsocketSupport) IsAssetWebsocketSupported(aType asset.Item) bool
 	defer a.m.RUnlock()
 	return a.unsupported == nil || !a.unsupported[aType]
 }
+
+func (b *Base) TransferAsset(from asset.Item, to asset.Item, assetStr string, amount float64) (string, error) {
+	return "", common.ErrFunctionNotSupported
+}

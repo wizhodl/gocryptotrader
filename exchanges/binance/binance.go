@@ -1003,7 +1003,7 @@ func (b *Binance) FetchSpotExchangeLimits() ([]order.MinMaxLevel, error) {
 }
 
 // TransferFuturesAsset transfer asset between spot and futures
-func (b *Binance) TransferFuturesAsset(assetStr string, amount float64, tranferType FuturesTranferType) (int64, error) {
+func (b *Binance) TransferFuturesAsset(assetStr string, amount float64, tranferType FuturesTranferType) (string, error) {
 	var resp FuturesTransferResponse
 
 	params := url.Values{}
@@ -1012,12 +1012,12 @@ func (b *Binance) TransferFuturesAsset(assetStr string, amount float64, tranferT
 	params.Set("type", strconv.FormatInt(int64(tranferType), 10))
 
 	if err := b.SendAuthHTTPRequest(exchange.RestSpotSupplementary, http.MethodPost, futuresTransfer, params, spotDefaultRate, &resp); err != nil {
-		return 0, err
+		return "", err
 	}
 
 	if resp.TranId == 0 {
-		return 0, errors.New(resp.Msg)
+		return "", errors.New(resp.Msg)
 	}
 
-	return resp.TranId, nil
+	return fmt.Sprintf("%v", resp.TranId), nil
 }

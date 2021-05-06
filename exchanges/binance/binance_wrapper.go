@@ -1610,3 +1610,27 @@ func (b *Binance) UpdateOrderExecutionLimits(a asset.Item) error {
 	}
 	return b.LoadLimits(limits)
 }
+
+// tranfer asset between spot and futures
+func (b *Binance) TransferAsset(from asset.Item, to asset.Item, assetStr string, amount float64) (string, error) {
+	var tranferType FuturesTranferType
+	if from == asset.Spot {
+		if to == asset.USDTMarginedFutures {
+			tranferType = FuturesTranferTypeSpotToUFuture
+		} else if to == asset.CoinMarginedFutures {
+			tranferType = FuturesTranferTypeSpotToFuture
+		}
+	} else if to == asset.Spot {
+		if from == asset.USDTMarginedFutures {
+			tranferType = FuturesTranferTypeUFutureToSpot
+		} else if from == asset.CoinMarginedFutures {
+			tranferType = FuturesTranferTypeFutureToSpot
+		}
+	}
+
+	if int(tranferType) == 0 {
+		return "", fmt.Errorf("assetType not supported from %v to %v", from, to)
+	}
+
+	return b.TransferFuturesAsset(assetStr, amount, tranferType)
+}

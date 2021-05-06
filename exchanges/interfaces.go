@@ -91,4 +91,5 @@ type IBotExchange interface {
 	GetOrderExecutionLimits(a asset.Item, cp currency.Pair) (*order.Limits, error)
 	CheckOrderExecutionLimits(a asset.Item, cp currency.Pair, price, amount float64, orderType order.Type) error
 	UpdateOrderExecutionLimits(a asset.Item) error
+	TransferAsset(from asset.Item, to asset.Item, assetStr string, amount float64) (string, error)
 }

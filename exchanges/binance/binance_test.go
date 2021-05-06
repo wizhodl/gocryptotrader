@@ -2024,27 +2024,27 @@ func TestWsTickerUpdate(t *testing.T) {
 func TestWsKlineUpdate(t *testing.T) {
 	t.Parallel()
 	pressXToJSON := []byte(`{"stream":"btcusdt@kline_1m","data":{
-	  "e": "kline",     
-	  "E": 123456789,   
-	  "s": "BNBBTC",    
+	  "e": "kline",
+	  "E": 123456789,
+	  "s": "BNBBTC",
 	  "k": {
-		"t": 123400000, 
-		"T": 123460000, 
-		"s": "BNBBTC",  
-		"i": "1m",      
-		"f": 100,       
-		"L": 200,       
-		"o": "0.0010",  
-		"c": "0.0020",  
-		"h": "0.0025",  
-		"l": "0.0015",  
-		"v": "1000",    
-		"n": 100,       
-		"x": false,     
-		"q": "1.0000",  
-		"V": "500",     
-		"Q": "0.500",   
-		"B": "123456"   
+		"t": 123400000,
+		"T": 123460000,
+		"s": "BNBBTC",
+		"i": "1m",
+		"f": 100,
+		"L": 200,
+		"o": "0.0010",
+		"c": "0.0020",
+		"h": "0.0025",
+		"l": "0.0015",
+		"v": "1000",
+		"n": 100,
+		"x": false,
+		"q": "1.0000",
+		"V": "500",
+		"Q": "0.500",
+		"B": "123456"
 	  }
 	}}`)
 	err := b.wsHandleData(pressXToJSON)
@@ -2056,17 +2056,17 @@ func TestWsKlineUpdate(t *testing.T) {
 func TestWsTradeUpdate(t *testing.T) {
 	t.Parallel()
 	pressXToJSON := []byte(`{"stream":"btcusdt@trade","data":{
-	  "e": "trade",     
-	  "E": 123456789,   
-	  "s": "BNBBTC",    
-	  "t": 12345,       
-	  "p": "0.001",     
-	  "q": "100",       
-	  "b": 88,          
-	  "a": 50,          
-	  "T": 123456785,   
-	  "m": true,        
-	  "M": true         
+	  "e": "trade",
+	  "E": 123456789,
+	  "s": "BNBBTC",
+	  "t": 12345,
+	  "p": "0.001",
+	  "q": "100",
+	  "b": 88,
+	  "a": 50,
+	  "T": 123456785,
+	  "m": true,
+	  "M": true
 	}}`)
 	err := b.wsHandleData(pressXToJSON)
 	if err != nil {
@@ -2106,15 +2106,15 @@ func TestWsDepthUpdate(t *testing.T) {
 	}
 
 	update1 := []byte(`{"stream":"btcusdt@depth","data":{
-	  "e": "depthUpdate", 
-	  "E": 123456788,     
-	  "s": "BTCUSDT",      
-	  "U": 157,           
-	  "u": 160,           
-	  "b": [              
+	  "e": "depthUpdate",
+	  "E": 123456788,
+	  "s": "BTCUSDT",
+	  "U": 157,
+	  "u": 160,
+	  "b": [
 		["6621.45", "0.3"]
 	  ],
-	  "a": [              
+	  "a": [
 		["6622.46", "1.5"]
 	  ]
 	}}`)
@@ -2143,16 +2143,16 @@ func TestWsDepthUpdate(t *testing.T) {
 	}
 
 	update2 := []byte(`{"stream":"btcusdt@depth","data":{
-	  "e": "depthUpdate", 
-	  "E": 123456789,     
-	  "s": "BTCUSDT",      
-	  "U": 161,           
-	  "u": 165,           
-	  "b": [           
+	  "e": "depthUpdate",
+	  "E": 123456789,
+	  "s": "BTCUSDT",
+	  "U": 161,
+	  "u": 165,
+	  "b": [
 		["6621.45", "0.163526"]
 	  ],
-	  "a": [             
-		["6622.46", "2.3"], 
+	  "a": [
+		["6622.46", "2.3"],
 		["6622.47", "1.9"]
 	  ]
 	}}`)
@@ -2182,11 +2182,11 @@ func TestWsDepthUpdate(t *testing.T) {
 func TestWsBalanceUpdate(t *testing.T) {
 	t.Parallel()
 	pressXToJSON := []byte(`{"stream":"jTfvpakT2yT0hVIo5gYWVihZhdM2PrBgJUZ5PyfZ4EVpCkx4Uoxk5timcrQc","data":{
-  "e": "balanceUpdate",         
-  "E": 1573200697110,           
-  "a": "BTC",                   
-  "d": "100.00000000",          
-  "T": 1573200697068            
+  "e": "balanceUpdate",
+  "E": 1573200697110,
+  "a": "BTC",
+  "d": "100.00000000",
+  "T": 1573200697068
 }}`)
 	err := b.wsHandleData(pressXToJSON)
 	if err != nil {
@@ -2197,21 +2197,21 @@ func TestWsBalanceUpdate(t *testing.T) {
 func TestWsOCO(t *testing.T) {
 	t.Parallel()
 	pressXToJSON := []byte(`{"stream":"jTfvpakT2yT0hVIo5gYWVihZhdM2PrBgJUZ5PyfZ4EVpCkx4Uoxk5timcrQc","data":{
-  "e": "listStatus",                
-  "E": 1564035303637,               
-  "s": "ETHBTC",                    
-  "g": 2,                           
-  "c": "OCO",                       
-  "l": "EXEC_STARTED",              
-  "L": "EXECUTING",                 
-  "r": "NONE",                      
-  "C": "F4QN4G8DlFATFlIUQ0cjdD",    
-  "T": 1564035303625,               
-  "O": [                            
+  "e": "listStatus",
+  "E": 1564035303637,
+  "s": "ETHBTC",
+  "g": 2,
+  "c": "OCO",
+  "l": "EXEC_STARTED",
+  "L": "EXECUTING",
+  "r": "NONE",
+  "C": "F4QN4G8DlFATFlIUQ0cjdD",
+  "T": 1564035303625,
+  "O": [
     {
-      "s": "ETHBTC",                
-      "i": 17,                      
-      "c": "AJYsMjErWJesZvqlJCTUgL" 
+      "s": "ETHBTC",
+      "i": 17,
+      "c": "AJYsMjErWJesZvqlJCTUgL"
     },
     {
       "s": "ETHBTC",
