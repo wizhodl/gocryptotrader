@@ -18,6 +18,7 @@ import (
 	"github.com/thrasher-corp/gocryptotrader/exchanges/kline"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/order"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/orderbook"
+	"github.com/thrasher-corp/gocryptotrader/exchanges/position"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/protocol"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/request"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/stream"
@@ -1648,4 +1649,39 @@ func (b *Binance) TransferAsset(from asset.Item, to asset.Item, assetStr string,
 	}
 
 	return b.TransferFuturesAsset(assetStr, amount, tranferType)
+}
+
+// GetPositions get future positions
+func (b *Binance) GetPositions(a asset.Item, cp *currency.Pair) (positions []position.Position, er error) {
+	positions = []position.Position{}
+	if a == asset.CoinMarginedFutures {
+		if ps, err := b.FuturesPositionsInfo("", ""); err != nil {
+			er = err
+		} else {
+			for _, p := range ps {
+				positionSide := position.PositionSideShort
+				if strings.EqualFold(p.PositionSide, "BOTH") && p.PositionAmount > 0 {
+					positionSide = position.PositionSideLong
+				}
+				if p.PositionAmount != 0 {
+					if cp == nil || strings.EqualFold(p.Symbol, cp.String()) {
+						positions = append(positions, position.Position{
+							FutureSymbol: p.Symbol,
+							Qty:          p.PositionAmount,
+							EntryPrice:   p.EntryPrice,
+							MarkPrice:    p.MarkPrice,
+							Leverage:     p.Leverage,
+							MaxQty:       p.MaxQty,
+							Side:         positionSide,
+						})
+					}
+				}
+
+			}
+		}
+	} else {
+		er = common.ErrNotYetImplemented
+	}
+	return positions, er
+
 }
