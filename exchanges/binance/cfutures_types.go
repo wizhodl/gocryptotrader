@@ -210,7 +210,7 @@ type FuturesOrderPlaceData struct {
 	CumQty        float64 `json:"cumQty,string"`
 	CumBase       float64 `json:"cumBase,string"`
 	ExecuteQty    float64 `json:"executeQty,string"`
-	OrderID       int64   `json:"orderID,string"`
+	OrderID       int64   `json:"orderID"`
 	AvgPrice      float64 `json:"avgPrice,string"`
 	OrigQty       float64 `json:"origQty,string"`
 	Price         float64 `json:"price,string"`
@@ -218,7 +218,7 @@ type FuturesOrderPlaceData struct {
 	Side          string  `json:"side"`
 	PositionSide  string  `json:"positionSide"`
 	Status        string  `json:"status"`
-	StopPrice     int64   `json:"stopPrice"`
+	StopPrice     float64 `json:"stopPrice,string"`
 	ClosePosition bool    `json:"closePosition"`
 	Symbol        string  `json:"symbol"`
 	Pair          string  `json:"pair"`
