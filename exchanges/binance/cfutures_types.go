@@ -344,6 +344,7 @@ type FuturesAccountInformation struct {
 		WalletBalance          float64 `json:"walletBalance,string"`
 		UnrealizedProfit       float64 `json:"unrealizedProfit,string"`
 		MarginBalance          float64 `json:"marginBalance,string"`
+		AvailableBalance       float64 `json:"availableBalance,string"`
 		MaintMargin            float64 `json:"maintMargin,string"`
 		InitialMargin          float64 `json:"initialMargin,string"`
 		PositionInitialMargin  float64 `json:"positionInitialMargin,string"`
