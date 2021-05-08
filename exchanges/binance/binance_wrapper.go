@@ -1055,7 +1055,7 @@ func (b *Binance) GetOrderInfo(orderID string, pair currency.Pair, assetType ass
 			LastUpdated:    resp.UpdateTime,
 		}, nil
 	case asset.CoinMarginedFutures:
-		orderData, err := b.FuturesOpenOrderData(pair, orderID, "")
+		orderData, err := b.FuturesGetOrderData(pair, orderID, "")
 		if err != nil {
 			return respData, err
 		}
