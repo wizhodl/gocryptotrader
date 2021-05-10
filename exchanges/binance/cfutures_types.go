@@ -383,9 +383,9 @@ type GenericAuthResponse struct {
 
 // FuturesLeverageData stores leverage data for futures
 type FuturesLeverageData struct {
-	Leverage int64   `json:"leverage"`
-	MaxQty   float64 `json:"maxQty,string"`
-	Symbol   string  `json:"symbol"`
+	Leverage int64 `json:"leverage"`
+	// MaxQty   float64 `json:"maxQty,string"`
+	Symbol string `json:"symbol"`
 }
 
 // ModifyIsolatedMarginData stores margin modification data
