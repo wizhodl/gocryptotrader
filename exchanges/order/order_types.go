@@ -124,6 +124,7 @@ type Detail struct {
 	PostOnly          bool
 	Leverage          float64
 	Price             float64
+	ExecutedPrice     float64
 	Amount            float64
 	LimitPriceUpper   float64
 	LimitPriceLower   float64

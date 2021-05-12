@@ -1077,6 +1077,7 @@ func (b *Binance) GetOrderInfo(orderID string, pair currency.Pair, assetType ass
 		respData.ID = orderID
 		respData.Pair = pair
 		respData.Price = orderData.Price
+		respData.ExecutedPrice = orderData.AveragePrice
 		respData.RemainingAmount = orderData.OriginalQuantity - orderData.ExecutedQuantity
 		respData.Side = orderVars.Side
 		respData.Status = orderVars.Status
