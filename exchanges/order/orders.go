@@ -37,7 +37,7 @@ func (s *Submit) Validate(opt ...validate.Checker) error {
 		return ErrTypeIsInvalid
 	}
 
-	if s.Amount <= 0 {
+	if s.Amount <= 0 && s.QuoteAmount <= 0 {
 		return fmt.Errorf("submit validation error %w, suppled: %.8f", ErrAmountIsInvalid, s.Amount)
 	}
 

@@ -36,6 +36,7 @@ type Submit struct {
 	Leverage          float64
 	Price             float64
 	Amount            float64
+	QuoteAmount       float64
 	StopPrice         float64
 	LimitPriceUpper   float64
 	LimitPriceLower   float64

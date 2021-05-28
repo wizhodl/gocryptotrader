@@ -786,12 +786,13 @@ func (b *Binance) SubmitOrder(s *order.Submit) (order.SubmitResponse, error) {
 		}
 
 		var orderRequest = NewOrderRequest{
-			Symbol:      s.Pair,
-			Side:        sideType,
-			Price:       s.Price,
-			Quantity:    s.Amount,
-			TradeType:   requestParamsOrderType,
-			TimeInForce: timeInForce,
+			Symbol:        s.Pair,
+			Side:          sideType,
+			Price:         s.Price,
+			Quantity:      s.Amount,
+			QuoteOrderQty: s.QuoteAmount,
+			TradeType:     requestParamsOrderType,
+			TimeInForce:   timeInForce,
 		}
 		response, err := b.NewOrder(&orderRequest)
 		if err != nil {
