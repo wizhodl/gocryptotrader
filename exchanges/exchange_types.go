@@ -180,6 +180,7 @@ type API struct {
 	AuthenticatedSupport          bool
 	AuthenticatedWebsocketSupport bool
 	PEMKeySupport                 bool
+	IsTestnet                     bool
 
 	Endpoints *Endpoints
 

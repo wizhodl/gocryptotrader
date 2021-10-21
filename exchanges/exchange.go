@@ -548,6 +548,7 @@ func (b *Base) SetupDefaults(exch *config.ExchangeConfig) error {
 	b.Config = exch
 	b.Verbose = exch.Verbose
 
+	b.API.IsTestnet = exch.API.IsTestnet
 	b.API.AuthenticatedSupport = exch.API.AuthenticatedSupport
 	b.API.AuthenticatedWebsocketSupport = exch.API.AuthenticatedWebsocketSupport
 	if b.API.AuthenticatedSupport || b.API.AuthenticatedWebsocketSupport {

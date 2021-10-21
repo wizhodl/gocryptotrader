@@ -374,6 +374,7 @@ type APIConfig struct {
 	AuthenticatedSupport          bool `json:"authenticatedSupport"`
 	AuthenticatedWebsocketSupport bool `json:"authenticatedWebsocketApiSupport"`
 	PEMKeySupport                 bool `json:"pemKeySupport,omitempty"`
+	IsTestnet                     bool
 
 	Credentials          APICredentialsConfig           `json:"credentials"`
 	CredentialsValidator *APICredentialsValidatorConfig `json:"credentialsValidator,omitempty"`
