@@ -92,6 +92,22 @@ func (o *OKEX) SetDefaults() {
 		log.Errorln(log.ExchangeSys, err)
 	}
 
+	coinFutures := currency.PairStore{
+		RequestFormat: &currency.PairFormat{
+			Uppercase: true,
+			Delimiter: currency.DashDelimiter,
+		},
+		ConfigFormat: &currency.PairFormat{
+			Uppercase: true,
+			Delimiter: currency.DashDelimiter,
+		},
+	}
+
+	err = o.StoreAssetPairFormat(asset.CoinMarginedFutures, coinFutures)
+	if err != nil {
+		log.Errorln(log.ExchangeSys, err)
+	}
+
 	index := currency.PairStore{
 		RequestFormat: &currency.PairFormat{
 			Uppercase: true,
@@ -300,64 +316,6 @@ func (o *OKEX) Run() {
 			o.Name,
 			err)
 	}
-}
-
-// FetchTradablePairs returns a list of the exchanges tradable pairs
-func (o *OKEX) FetchTradablePairs(i asset.Item) ([]string, error) {
-	var pairs []string
-
-	format, err := o.GetPairFormat(i, false)
-	if err != nil {
-		return nil, err
-	}
-
-	switch i {
-	case asset.Spot:
-		prods, err := o.GetSpotTokenPairDetails()
-		if err != nil {
-			return nil, err
-		}
-
-		for x := range prods {
-			pairs = append(pairs,
-				currency.NewPairWithDelimiter(prods[x].BaseCurrency,
-					prods[x].QuoteCurrency,
-					format.Delimiter).String())
-		}
-		return pairs, nil
-	case asset.Futures:
-		prods, err := o.GetFuturesContractInformation()
-		if err != nil {
-			return nil, err
-		}
-
-		for x := range prods {
-			p := strings.Split(prods[x].InstrumentID, currency.DashDelimiter)
-			pairs = append(pairs, p[0]+currency.DashDelimiter+p[1]+format.Delimiter+p[2])
-		}
-		return pairs, nil
-
-	case asset.PerpetualSwap:
-		prods, err := o.GetSwapContractInformation()
-		if err != nil {
-			return nil, err
-		}
-
-		for x := range prods {
-			pairs = append(pairs,
-				prods[x].UnderlyingIndex+
-					currency.DashDelimiter+
-					prods[x].QuoteCurrency+
-					format.Delimiter+
-					"SWAP")
-		}
-		return pairs, nil
-	case asset.Index:
-		// This is updated in futures index
-		return nil, errors.New("index updated in futures")
-	}
-
-	return nil, fmt.Errorf("%s invalid asset type", o.Name)
 }
 
 // UpdateTradablePairs updates the exchanges available pairs and stores
@@ -682,6 +640,8 @@ func (o *OKEX) GetOrderInfo(orderID string, pair currency.Pair, assetType asset.
 
 	amount, _ := strconv.ParseFloat(mOrder.Size, 64)
 	filledAmount, _ := strconv.ParseFloat(mOrder.FilledSize, 64)
+	price, _ := strconv.ParseFloat(mOrder.Price, 64)
+	filledPrice, _ := strconv.ParseFloat(mOrder.AvgPrice, 64)
 
 	resp = order.Detail{
 		ID:             mOrder.OrderID,
@@ -691,6 +651,8 @@ func (o *OKEX) GetOrderInfo(orderID string, pair currency.Pair, assetType asset.
 		Date:           time.Unix(mOrder.Timestamp, 0),
 		ExecutedAmount: filledAmount,
 		Side:           order.Side(mOrder.Side),
+		Price:          price,
+		ExecutedPrice:  filledPrice,
 	}
 
 	switch mOrder.State {
@@ -707,4 +669,87 @@ func (o *OKEX) GetOrderInfo(orderID string, pair currency.Pair, assetType asset.
 	}
 
 	return
+}
+
+func (o *OKEX) SubmitOrder(s *order.Submit) (order.SubmitResponse, error) {
+	err := s.Validate()
+	if err != nil {
+		return order.SubmitResponse{}, err
+	}
+
+	fpair, err := o.FormatExchangeCurrency(s.Pair, s.AssetType)
+	if err != nil {
+		return order.SubmitResponse{}, err
+	}
+
+	request := PlaceOrderRequest{
+		ClientOID:    s.ClientID,
+		InstrumentID: fpair.String(),
+		Side:         s.Side.Lower(),
+		OrdType:      s.Type.Lower(),
+		Size:         strconv.FormatFloat(s.Amount, 'f', -1, 64),
+		ReduceOnly:   s.ReduceOnly,
+	}
+
+	if s.Type == order.Limit && s.ImmediateOrCancel {
+		request.OrdType = "ioc"
+	}
+
+	if s.Amount == 0 && s.QuoteAmount > 0 {
+		request.Size = strconv.FormatFloat(s.QuoteAmount, 'f', -1, 64)
+		request.SizeCurrency = "quote_ccy"
+	}
+
+	if s.AssetType == asset.Spot {
+		request.TdMode = "cash"
+	} else {
+		request.TdMode = "cross"
+		// 买卖模式不传 PosSide，双向持仓模式需要
+		// if s.Side == order.Buy {
+		// 	request.PosSide = "long"
+		// 	// if s.ReduceOnly {
+		// 	// 	request.PosSide = "short"
+		// 	// }
+		// } else {
+		// 	request.PosSide = "short"
+		// 	// if s.ReduceOnly {
+		// 	// 	request.PosSide = "long"
+		// 	// }
+		// }
+	}
+
+	if s.Price > 0 {
+		request.Price = strconv.FormatFloat(s.Price, 'f', -1, 64)
+	}
+
+	orderResponse, err := o.PlaceOrder(&request)
+	if err != nil {
+		return order.SubmitResponse{}, err
+	}
+
+	var resp order.SubmitResponse
+	if orderResponse.OrderID != "" {
+		resp.IsOrderPlaced = true
+		resp.OrderID = orderResponse.OrderID
+	}
+
+	return resp, nil
+}
+
+func (o *OKEX) FetchTradablePairs(i asset.Item) ([]string, error) {
+	var pairs []string
+
+	_, err := o.GetPairFormat(i, false)
+	if err != nil {
+		return nil, err
+	}
+
+	prods, err := o.GetInstruments(i)
+	if err != nil {
+		return nil, err
+	}
+	for x := range prods {
+		pairs = append(pairs, prods[x].InstrumentID)
+	}
+	return pairs, nil
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/thrasher-corp/gocryptotrader/common/crypto"
 	"github.com/thrasher-corp/gocryptotrader/currency"
 	exchange "github.com/thrasher-corp/gocryptotrader/exchanges"
+	"github.com/thrasher-corp/gocryptotrader/exchanges/asset"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/okgroup"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/request"
 	"github.com/thrasher-corp/gocryptotrader/log"
@@ -35,6 +36,9 @@ const (
 	okGroupSwapSubsection    = ""
 	okGroupETTSubsection     = ""
 	okGroupMarginSubsection  = ""
+	// v5 api endpoint
+	publicInstruments = "public/instruments"
+
 	// Futures based endpoints
 	okGroupFuturePosition = "position"
 	okGroupFutureLeverage = "leverage"
@@ -634,9 +638,9 @@ func (o *OKEX) SendHTTPRequest(ep exchange.URL, httpMethod, requestType, request
 	defer cancel()
 	var intermediary json.RawMessage
 	type response struct {
-		Code string      `json:"code,omitempty"`
-		Msg  string      `json:"msg,omitempty"`
-		Data interface{} `json:"data,omitempty"`
+		Code string        `json:"code,omitempty"`
+		Msg  string        `json:"msg,omitempty"`
+		Data []interface{} `json:"data,omitempty"`
 	}
 
 	resp := response{}
@@ -662,17 +666,49 @@ func (o *OKEX) SendHTTPRequest(ep exchange.URL, httpMethod, requestType, request
 		}
 	}
 
-	return json.Unmarshal(intermediary, result)
+	if len(resp.Data) > 0 {
+		if isArrayData(requestPath) {
+			dataJson, _ := json.Marshal(resp.Data)
+			return json.Unmarshal(dataJson, result)
+		} else {
+			data := resp.Data[0]
+			dataJson, _ := json.Marshal(data)
+			return json.Unmarshal(dataJson, result)
+		}
+	}
+
+	return nil
+}
+
+func isArrayData(path string) bool {
+	if strings.HasPrefix(path, "public/instruments") {
+		return true
+	}
+	return false
 }
 
 func (o *OKEX) GetOrder(request OrderRequest) (resp GetOrderResponse, _ error) {
-	result := struct {
-		Orders []GetOrderResponse `json:"data"`
-	}{}
 	requestURL := fmt.Sprintf("trade/order%v", okgroup.FormatParameters(request))
-	err := o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", requestURL, request, &result, true)
-	if len(result.Orders) > 0 {
-		resp = result.Orders[0]
-	}
+	err := o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", requestURL, request, &resp, true)
 	return resp, err
+}
+
+func (o *OKEX) PlaceOrder(request *PlaceOrderRequest) (resp PlaceOrderResponse, _ error) {
+	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodPost, "", "trade/order", request, &resp, true)
+}
+
+func (o *OKEX) GetInstruments(i asset.Item) (resp []Instrument, _ error) {
+	var instType string
+	switch i {
+	case asset.Spot:
+		instType = "SPOT"
+	case asset.Futures:
+		instType = "FUTURES"
+	case asset.CoinMarginedFutures:
+		instType = "FUTURES"
+	case asset.PerpetualSwap:
+		instType = "SWAP"
+	}
+	requestURL := fmt.Sprintf("%s?instType=%s", publicInstruments, instType)
+	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", requestURL, nil, &resp, false)
 }

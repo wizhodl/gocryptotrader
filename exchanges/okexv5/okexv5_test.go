@@ -1778,30 +1778,6 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 
 // Wrapper tests --------------------------------------------------------------------------------------------------
 
-// TestSubmitOrder Wrapper test
-func TestSubmitOrder(t *testing.T) {
-	TestSetRealOrderDefaults(t)
-	t.Parallel()
-	var orderSubmission = &order.Submit{
-		Pair: currency.Pair{
-			Base:  currency.BTC,
-			Quote: currency.USDT,
-		},
-		Side:      order.Buy,
-		Type:      order.Limit,
-		Price:     1,
-		Amount:    1,
-		ClientID:  "meowOrder",
-		AssetType: asset.Spot,
-	}
-	response, err := o.SubmitOrder(orderSubmission)
-	if areTestAPIKeysSet() && (err != nil || !response.IsOrderPlaced) {
-		t.Errorf("Order failed to be placed: %v", err)
-	} else if !areTestAPIKeysSet() && err == nil {
-		t.Error("Expecting an error when no keys are set")
-	}
-}
-
 // TestCancelExchangeOrder Wrapper test
 func TestCancelExchangeOrder(t *testing.T) {
 	TestSetRealOrderDefaults(t)
@@ -2239,7 +2215,7 @@ func TestGetOrder(t *testing.T) {
 	t.Parallel()
 	pair := currency.NewPairWithDelimiter(currency.BTC.String(), currency.USDT.String(), "-")
 	request := OrderRequest{
-		OrderID:      "371276105977831431",
+		OrderID:      "371690998300286976",
 		InstrumentID: currency.NewPairWithDelimiter(currency.BTC.String(), currency.USDT.String(), "-").Upper().String(),
 	}
 	_, err := o.GetOrder(request)
@@ -2250,4 +2226,114 @@ func TestGetOrder(t *testing.T) {
 		t.Error("get order failed")
 	}
 	testStandardErrorHandling(t, err)
+}
+
+func TestSubmitOrder(t *testing.T) {
+	t.Parallel()
+
+	// o.FetchTradablePairs(asset.Spot)
+	// o.FetchTradablePairs(asset.CoinMarginedFutures)
+
+	pair, _ := currency.NewPairFromString("BTC-USDT")
+	futurePair, _ := currency.NewPairFromString("btc-usd-211029")
+
+	// 市价单
+	var orderSubmission = &order.Submit{
+		Pair:              pair,
+		Side:              order.Sell,
+		Type:              order.Market,
+		ImmediateOrCancel: true,
+		QuoteAmount:       100,
+		AssetType:         asset.Spot,
+	}
+	response, err := o.SubmitOrder(orderSubmission)
+	if err != nil || !response.IsOrderPlaced {
+		t.Errorf("order failed to be placed: %v", err)
+	}
+
+	// 限价 IOC 订单 - 现货
+	orderSubmission = &order.Submit{
+		Pair: currency.Pair{
+			Base:  currency.BTC,
+			Quote: currency.USDT,
+		},
+		Side:              order.Buy,
+		Type:              order.Limit,
+		ImmediateOrCancel: true,
+		ReduceOnly:        false,
+		Price:             10000,
+		Amount:            0.01,
+		AssetType:         asset.Spot,
+	}
+	response, err = o.SubmitOrder(orderSubmission)
+	if err != nil || !response.IsOrderPlaced {
+		t.Errorf("order failed to be placed: %v", err)
+	}
+
+	// 限价非 IOC 订单 - 现货
+	orderSubmission = &order.Submit{
+		Pair: currency.Pair{
+			Base:  currency.BTC,
+			Quote: currency.USDT,
+		},
+		Side:              order.Buy,
+		Type:              order.Limit,
+		ImmediateOrCancel: false,
+		ReduceOnly:        false,
+		Price:             10000,
+		Amount:            0.01,
+		AssetType:         asset.Spot,
+	}
+	response, err = o.SubmitOrder(orderSubmission)
+	if err != nil || !response.IsOrderPlaced {
+		t.Errorf("order failed to be placed: %v", err)
+	}
+
+	// 限价 IOC 订单 - 合约
+	orderSubmission = &order.Submit{
+		Pair:              futurePair,
+		Side:              order.Buy,
+		Type:              order.Limit,
+		ImmediateOrCancel: true,
+		ReduceOnly:        false,
+		Price:             10000,
+		Amount:            2,
+		AssetType:         asset.CoinMarginedFutures,
+	}
+	response, err = o.SubmitOrder(orderSubmission)
+	if err != nil || !response.IsOrderPlaced {
+		t.Errorf("order failed to be placed: %v", err)
+	}
+
+	// 限价非IOC 订单 - 合约
+	orderSubmission = &order.Submit{
+		Pair:              futurePair,
+		Side:              order.Sell,
+		Type:              order.Limit,
+		ImmediateOrCancel: false,
+		ReduceOnly:        false,
+		Price:             100000,
+		Amount:            3,
+		AssetType:         asset.CoinMarginedFutures,
+	}
+	response, err = o.SubmitOrder(orderSubmission)
+	if err != nil || !response.IsOrderPlaced {
+		t.Errorf("order failed to be placed: %v", err)
+	}
+
+	// 限价 IOC 订单 - 合约平仓单
+	orderSubmission = &order.Submit{
+		Pair:              futurePair,
+		Side:              order.Sell,
+		Type:              order.Limit,
+		ImmediateOrCancel: true,
+		ReduceOnly:        true,
+		Price:             63000,
+		Amount:            1,
+		AssetType:         asset.CoinMarginedFutures,
+	}
+	response, err = o.SubmitOrder(orderSubmission)
+	if err != nil || !response.IsOrderPlaced {
+		t.Errorf("order failed to be placed: %v", err)
+	}
 }
