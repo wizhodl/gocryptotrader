@@ -13,10 +13,12 @@ import (
 	"github.com/thrasher-corp/gocryptotrader/config"
 	"github.com/thrasher-corp/gocryptotrader/currency"
 	exchange "github.com/thrasher-corp/gocryptotrader/exchanges"
+	"github.com/thrasher-corp/gocryptotrader/exchanges/account"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/asset"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/kline"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/okgroup"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/order"
+	"github.com/thrasher-corp/gocryptotrader/exchanges/position"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/protocol"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/request"
 	"github.com/thrasher-corp/gocryptotrader/exchanges/stream"
@@ -752,4 +754,108 @@ func (o *OKEX) FetchTradablePairs(i asset.Item) ([]string, error) {
 		pairs = append(pairs, prods[x].InstrumentID)
 	}
 	return pairs, nil
+}
+
+func (o *OKEX) CancelOrder(cancel *order.Cancel) (err error) {
+	err = cancel.Validate(cancel.StandardCancel())
+	if err != nil {
+		return
+	}
+
+	fpair, err := o.FormatExchangeCurrency(cancel.Pair,
+		cancel.AssetType)
+	if err != nil {
+		return
+	}
+
+	orderCancellationResponse, err := o.cancelOrder(CancelOrderRequest{
+		InstrumentID: fpair.String(),
+		OrderID:      cancel.ID,
+	})
+
+	if err != nil && orderCancellationResponse.SMsg != "" {
+		err = fmt.Errorf("order %s failed to be cancelled: %s", orderCancellationResponse.OrderID, orderCancellationResponse.SMsg)
+	}
+
+	return
+}
+
+func (o *OKEX) TransferAsset(from asset.Item, to asset.Item, assetStr string, amount float64) (string, error) {
+	return "", nil
+}
+
+func (o *OKEX) UpdateAccountInfo(assetType asset.Item) (account.Holdings, error) {
+	currencies, err := o.GetTradingAccounts()
+	if err != nil {
+		return account.Holdings{}, err
+	}
+
+	var resp account.Holdings
+	resp.Exchange = o.Name
+	currencyAccount := account.SubAccount{}
+
+	for i := range currencies {
+		hold, parseErr := strconv.ParseFloat(currencies[i].Available, 64)
+		if parseErr != nil {
+			return resp, parseErr
+		}
+		totalValue, parseErr := strconv.ParseFloat(currencies[i].Balance, 64)
+		if parseErr != nil {
+			return resp, parseErr
+		}
+		currencyAccount.Currencies = append(currencyAccount.Currencies,
+			account.Balance{
+				CurrencyName: currency.NewCode(currencies[i].Currency),
+				Hold:         hold,
+				TotalValue:   totalValue,
+			})
+	}
+
+	resp.Accounts = append(resp.Accounts, currencyAccount)
+
+	err = account.Process(&resp)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
+func (o *OKEX) GetPositions(a asset.Item, cp *currency.Pair) (positions []position.Position, er error) {
+	positions = []position.Position{}
+	if a == asset.CoinMarginedFutures {
+		if ps, err := o.GetAccountPositions(); err != nil {
+			er = err
+		} else {
+			for _, p := range ps {
+				qty, _ := strconv.ParseFloat(p.Pos, 64)
+				positionSide := position.PositionSideShort
+				if strings.EqualFold(p.PosSide, "long") {
+					positionSide = position.PositionSideLong
+				} else if strings.EqualFold(p.PosSide, "net") && qty > 0 {
+					positionSide = position.PositionSideLong
+				}
+				if qty != 0 {
+					if cp == nil || strings.EqualFold(p.InstrumentID, cp.String()) {
+						px, _ := strconv.ParseFloat(p.AvgPx, 64)
+						lastPx, _ := strconv.ParseFloat(p.Last, 64)
+						leverage, _ := strconv.ParseFloat(p.Lever, 64)
+						positions = append(positions, position.Position{
+							FutureSymbol: p.InstrumentID,
+							Qty:          qty,
+							EntryPrice:   px,
+							MarkPrice:    lastPx,
+							Leverage:     leverage,
+							Side:         positionSide,
+						})
+					}
+				}
+
+			}
+		}
+	} else {
+		er = common.ErrNotYetImplemented
+	}
+	return positions, er
+
 }

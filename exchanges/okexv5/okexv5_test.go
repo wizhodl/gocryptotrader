@@ -2337,3 +2337,65 @@ func TestSubmitOrder(t *testing.T) {
 		t.Errorf("order failed to be placed: %v", err)
 	}
 }
+
+func TestCancelOrder(t *testing.T) {
+	t.Parallel()
+
+	pair, _ := currency.NewPairFromString("BTC-USDT")
+	futurePair, _ := currency.NewPairFromString("BTC-USD-211029")
+
+	err := o.CancelOrder(&order.Cancel{
+		AssetType: asset.Spot,
+		ID:        "372700561967292416",
+		Pair:      pair,
+	})
+	if err != nil {
+		t.Errorf("order failed to be canceled: %v", err)
+	}
+
+	err = o.CancelOrder(&order.Cancel{
+		AssetType: asset.CoinMarginedFutures,
+		ID:        "372711554898337792",
+		Pair:      futurePair,
+	})
+	if err != nil {
+		t.Errorf("order failed to be canceled: %v", err)
+	}
+}
+
+func TestUpdateAccountInfo(t *testing.T) {
+	t.Parallel()
+
+	bls, err := o.UpdateAccountInfo(asset.Spot)
+	if err != nil {
+		t.Errorf("UpdateAccountInfo err: %v", err)
+	}
+	for _, b := range bls.Accounts {
+		for _, c := range b.Currencies {
+			fmt.Printf("%s balance: %v, available: %v\n", c.CurrencyName, c.TotalValue, c.Hold)
+		}
+	}
+}
+
+func TestGetPositions(t *testing.T) {
+	t.Parallel()
+
+	futurePair, _ := currency.NewPairFromString("BTC-USD-211029")
+	pos, err := o.GetPositions(asset.CoinMarginedFutures, &futurePair)
+	if err != nil {
+		t.Errorf("GetPositions err: %v", err)
+	}
+	for _, p := range pos {
+		fmt.Printf("%s pos: %#v", p.FutureSymbol, p)
+	}
+}
+
+func TestSetLeverage(t *testing.T) {
+	t.Parallel()
+
+	futurePair, _ := currency.NewPairFromString("BTC-USD-211029")
+	_, err := o.SetLeverage(futurePair, "8", "cross")
+	if err != nil {
+		t.Errorf("SetLeverage err: %v", err)
+	}
+}

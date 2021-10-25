@@ -44,8 +44,8 @@ type SubAccount struct {
 // Balance is a sub type to store currency name and individual totals
 type Balance struct {
 	CurrencyName currency.Code
-	TotalValue   float64
-	Hold         float64
+	TotalValue   float64 // 账户余额
+	Hold         float64 // 可用余额
 }
 
 // Change defines incoming balance change on currency holdings

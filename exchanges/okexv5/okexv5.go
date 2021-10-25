@@ -38,6 +38,7 @@ const (
 	okGroupMarginSubsection  = ""
 	// v5 api endpoint
 	publicInstruments = "public/instruments"
+	accountPositions  = "account/positions"
 
 	// Futures based endpoints
 	okGroupFuturePosition = "position"
@@ -662,7 +663,19 @@ func (o *OKEX) SendHTTPRequest(ep exchange.URL, httpMethod, requestType, request
 	err = json.Unmarshal(intermediary, &resp)
 	if err == nil {
 		if resp.Code != "0" {
-			return fmt.Errorf("error[%v]: %v", resp.Code, resp.Msg)
+			msg := resp.Msg
+			if len(resp.Data) > 0 {
+				type sMsgData struct {
+					SCode string `json:"sCode"`
+					SMsg  string `json:"sMsg"`
+				}
+				var msgData sMsgData
+				dataJson, _ := json.Marshal(resp.Data[0])
+				if err := json.Unmarshal(dataJson, &msgData); err == nil && msgData.SMsg != "" {
+					msg = msgData.SMsg
+				}
+			}
+			return fmt.Errorf("error[%v]: %v", resp.Code, msg)
 		}
 	}
 
@@ -681,7 +694,9 @@ func (o *OKEX) SendHTTPRequest(ep exchange.URL, httpMethod, requestType, request
 }
 
 func isArrayData(path string) bool {
-	if strings.HasPrefix(path, "public/instruments") {
+	if strings.HasPrefix(path, publicInstruments) {
+		return true
+	} else if strings.HasPrefix(path, accountPositions) {
 		return true
 	}
 	return false
@@ -711,4 +726,35 @@ func (o *OKEX) GetInstruments(i asset.Item) (resp []Instrument, _ error) {
 	}
 	requestURL := fmt.Sprintf("%s?instType=%s", publicInstruments, instType)
 	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", requestURL, nil, &resp, false)
+}
+
+func (o *OKEX) cancelOrder(request CancelOrderRequest) (resp CancelOrderResponse, _ error) {
+	requestURL := fmt.Sprintf("trade/cancel-order%s", okgroup.FormatParameters(request))
+	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodPost, "", requestURL, request, &resp, true)
+}
+
+func (o *OKEX) GetTradingAccounts() (resp []GetTradingAccountResponse, _ error) {
+	type accountData struct {
+		Details []GetTradingAccountResponse `json:"details"`
+		TotalEq string                      `json:"totalEq"`
+	}
+	var data accountData
+	err := o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", "account/balance", nil, &data, true)
+	if data.TotalEq != "" {
+		resp = data.Details
+	}
+	return resp, err
+}
+
+func (o *OKEX) GetAccountPositions() (resp []GetPositionResponse, _ error) {
+	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", accountPositions, nil, &resp, true)
+}
+
+func (o *OKEX) SetLeverage(pair currency.Pair, leverage string, mgnMode string) (resp SetLeverageResponse, _ error) {
+	request := SetLeverageRequest{
+		InstrumentID: pair.String(),
+		Lever:        leverage,
+		MgnMode:      mgnMode,
+	}
+	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodPost, "", "account/set-leverage", request, &resp, true)
 }

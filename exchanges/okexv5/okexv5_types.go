@@ -58,3 +58,49 @@ type Instrument struct {
 	Alias        string `json:"alias"`
 	State        string `json:"state"`
 }
+
+type CancelOrderRequest struct {
+	InstrumentID string `json:"instId"`
+	OrderID      string `json:"ordId,omitempty"`
+	ClientOID    string `json:"clOrdId,omitempty"`
+}
+
+type CancelOrderResponse struct {
+	OrderID   string `json:"ordId"`
+	ClientOID string `json:"clOrdId"`
+	SCode     string `json:"sCode"`
+	SMsg      string `json:"sMsg"`
+}
+
+type GetTradingAccountResponse struct {
+	Currency  string `json:"ccy"`
+	Balance   string `json:"cashBal"`
+	Available string `json:"availEq"`
+	Frozen    string `json:"frozenBal"`
+}
+
+type GetPositionResponse struct {
+	InstrumentType string `json:"instType"`
+	InstrumentID   string `json:"instId"`
+	MgnMode        string `json:"mgnMode"`
+	PosId          string `json:"posId"`
+	PosSide        string `json:"posSide"`
+	Pos            string `json:"pos"`
+	PosCcy         string `json:"posCcy"`
+	AvailPos       string `json:"availPos"`
+	AvgPx          string `json:"avgPx"`
+	Lever          string `json:"lever"`
+	LiqPx          string `json:"liqPx"`
+	Last           string `json:"last"`
+}
+
+type SetLeverageRequest struct {
+	InstrumentID string `json:"instId"`
+	Lever        string `json:"lever"`
+	MgnMode      string `json:"mgnMode"`
+}
+
+type SetLeverageResponse struct {
+	InstrumentID string `json:"instId"`
+	Lever        string `json:"lever"`
+}
