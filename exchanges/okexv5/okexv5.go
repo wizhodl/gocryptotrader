@@ -719,8 +719,6 @@ func (o *OKEX) GetInstruments(i asset.Item) (resp []Instrument, _ error) {
 		instType = "SPOT"
 	case asset.Futures:
 		instType = "FUTURES"
-	case asset.CoinMarginedFutures:
-		instType = "FUTURES"
 	case asset.PerpetualSwap:
 		instType = "SWAP"
 	}

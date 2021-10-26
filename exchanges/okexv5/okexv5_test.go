@@ -2231,9 +2231,6 @@ func TestGetOrder(t *testing.T) {
 func TestSubmitOrder(t *testing.T) {
 	t.Parallel()
 
-	// o.FetchTradablePairs(asset.Spot)
-	// o.FetchTradablePairs(asset.CoinMarginedFutures)
-
 	pair, _ := currency.NewPairFromString("BTC-USDT")
 	futurePair, _ := currency.NewPairFromString("btc-usd-211029")
 
@@ -2397,5 +2394,18 @@ func TestSetLeverage(t *testing.T) {
 	_, err := o.SetLeverage(futurePair, "8", "cross")
 	if err != nil {
 		t.Errorf("SetLeverage err: %v", err)
+	}
+}
+
+func TestFetchTradablePairs(t *testing.T) {
+	t.Parallel()
+
+	_, err := o.FetchTradablePairs(asset.Spot)
+	if err != nil {
+		t.Errorf("FetchTradablePairs Spot err: %v", err)
+	}
+	_, err = o.FetchTradablePairs(asset.CoinMarginedFutures)
+	if err != nil {
+		t.Errorf("FetchTradablePairs CoinMarginedFutures err: %v", err)
 	}
 }

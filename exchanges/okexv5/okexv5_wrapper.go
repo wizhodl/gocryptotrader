@@ -746,12 +746,34 @@ func (o *OKEX) FetchTradablePairs(i asset.Item) ([]string, error) {
 		return nil, err
 	}
 
+	origItem := i
+	if origItem == asset.CoinMarginedFutures {
+		// Futures 和 Swap 中筛选币本位合约
+		i = asset.Futures
+
+		prods, err := o.GetInstruments(i)
+		if err != nil {
+			return nil, err
+		}
+		for _, p := range prods {
+			if origItem == asset.CoinMarginedFutures && p.SettleCcy == "USDT" {
+				continue
+			}
+			pairs = append(pairs, p.InstrumentID)
+		}
+
+		i = asset.PerpetualSwap
+	}
+
 	prods, err := o.GetInstruments(i)
 	if err != nil {
 		return nil, err
 	}
-	for x := range prods {
-		pairs = append(pairs, prods[x].InstrumentID)
+	for _, p := range prods {
+		if origItem == asset.CoinMarginedFutures && p.SettleCcy == "USDT" {
+			continue
+		}
+		pairs = append(pairs, p.InstrumentID)
 	}
 	return pairs, nil
 }
