@@ -748,11 +748,18 @@ func (o *OKEX) GetAccountPositions() (resp []GetPositionResponse, _ error) {
 	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", accountPositions, nil, &resp, true)
 }
 
-func (o *OKEX) SetLeverage(pair currency.Pair, leverage string, mgnMode string) (resp SetLeverageResponse, _ error) {
+func (o *OKEX) SetLeverage(pair currency.Pair, leverage string, mgnMode MarginMode) (resp SetLeverageResponse, _ error) {
 	request := SetLeverageRequest{
 		InstrumentID: pair.String(),
 		Lever:        leverage,
 		MgnMode:      mgnMode,
 	}
 	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodPost, "", "account/set-leverage", request, &resp, true)
+}
+
+// /api/v5/account/set-position-mode
+
+func (o *OKEX) GetMarketTicker(pair currency.Pair) (resp MarketTicker, _ error) {
+	requestURL := fmt.Sprintf("market/ticker?instId=%s", pair.String())
+	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", requestURL, nil, &resp, true)
 }

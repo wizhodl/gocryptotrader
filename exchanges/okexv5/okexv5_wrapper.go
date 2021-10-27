@@ -3,6 +3,7 @@ package okexv5
 import (
 	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -644,6 +645,7 @@ func (o *OKEX) GetOrderInfo(orderID string, pair currency.Pair, assetType asset.
 	filledAmount, _ := strconv.ParseFloat(mOrder.FilledSize, 64)
 	price, _ := strconv.ParseFloat(mOrder.Price, 64)
 	filledPrice, _ := strconv.ParseFloat(mOrder.AvgPrice, 64)
+	fee, _ := strconv.ParseFloat(mOrder.Fee, 64)
 
 	resp = order.Detail{
 		ID:             mOrder.OrderID,
@@ -655,6 +657,8 @@ func (o *OKEX) GetOrderInfo(orderID string, pair currency.Pair, assetType asset.
 		Side:           order.Side(mOrder.Side),
 		Price:          price,
 		ExecutedPrice:  filledPrice,
+		Fee:            math.Abs(fee),
+		FeeAsset:       mOrder.FeeCcy,
 	}
 
 	switch mOrder.State {
@@ -690,7 +694,11 @@ func (o *OKEX) SubmitOrder(s *order.Submit) (order.SubmitResponse, error) {
 		Side:         s.Side.Lower(),
 		OrdType:      s.Type.Lower(),
 		Size:         strconv.FormatFloat(s.Amount, 'f', -1, 64),
-		ReduceOnly:   s.ReduceOnly,
+	}
+
+	if s.AssetType == asset.Margin && s.ReduceOnly {
+		// 仅适用于币币杠杆订单
+		request.ReduceOnly = true
 	}
 
 	if s.Type == order.Limit && s.ImmediateOrCancel {

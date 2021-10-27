@@ -16,8 +16,8 @@ type GetOrderResponse struct {
 	State        string `json:"state"`
 	Timestamp    int64  `json:"uTime,string"`
 	Type         string `json:"ordType"`
-	// "feeCcy":"",
-	// "fee":"",
+	Fee          string `json:"fee"`
+	FeeCcy       string `json:"feeCcy"`
 }
 
 type PlaceOrderRequest struct {
@@ -94,13 +94,36 @@ type GetPositionResponse struct {
 	Last           string `json:"last"`
 }
 
+type MarginMode string
+
+const (
+	Isolated MarginMode = "isolated"
+	Cross    MarginMode = "cross"
+)
+
 type SetLeverageRequest struct {
-	InstrumentID string `json:"instId"`
-	Lever        string `json:"lever"`
-	MgnMode      string `json:"mgnMode"`
+	InstrumentID string     `json:"instId"`
+	Lever        string     `json:"lever"`
+	MgnMode      MarginMode `json:"mgnMode"`
 }
 
 type SetLeverageResponse struct {
 	InstrumentID string `json:"instId"`
 	Lever        string `json:"lever"`
+}
+
+type MarketTicker struct {
+	InstType  string `json:"instType"`
+	InstId    string `json:"instId"`
+	Last      string `json:"last"`
+	LastSz    string `json:"lastSz"`
+	AskPx     string `json:"askPx"`
+	AskSz     string `json:"askSz"`
+	BidPx     string `json:"bidPx"`
+	BidSz     string `json:"bidSz"`
+	Open24h   string `json:"open24h"`
+	High24h   string `json:"high24h"`
+	Low24h    string `json:"low24h"`
+	VolCcy24h string `json:"volCcy24h"`
+	Ts        string `json:"ts"`
 }

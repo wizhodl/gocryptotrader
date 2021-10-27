@@ -2213,10 +2213,11 @@ func TestGetHistoricTrades(t *testing.T) {
 
 func TestGetOrder(t *testing.T) {
 	t.Parallel()
-	pair := currency.NewPairWithDelimiter(currency.BTC.String(), currency.USDT.String(), "-")
+	// pair := currency.NewPairWithDelimiter(currency.BTC.String(), currency.USDT.String(), "-")
+	pair, _ := currency.NewPairFromString("BZZ-USDT")
 	request := OrderRequest{
-		OrderID:      "371690998300286976",
-		InstrumentID: currency.NewPairWithDelimiter(currency.BTC.String(), currency.USDT.String(), "-").Upper().String(),
+		OrderID:      "373517817525706754",
+		InstrumentID: pair.String(),
 	}
 	_, err := o.GetOrder(request)
 	testStandardErrorHandling(t, err)
@@ -2391,7 +2392,7 @@ func TestSetLeverage(t *testing.T) {
 	t.Parallel()
 
 	futurePair, _ := currency.NewPairFromString("BTC-USD-211029")
-	_, err := o.SetLeverage(futurePair, "8", "cross")
+	_, err := o.SetLeverage(futurePair, "8", Cross)
 	if err != nil {
 		t.Errorf("SetLeverage err: %v", err)
 	}
@@ -2407,5 +2408,25 @@ func TestFetchTradablePairs(t *testing.T) {
 	_, err = o.FetchTradablePairs(asset.CoinMarginedFutures)
 	if err != nil {
 		t.Errorf("FetchTradablePairs CoinMarginedFutures err: %v", err)
+	}
+}
+
+func TestGetMarketTicker(t *testing.T) {
+	t.Parallel()
+
+	pair, _ := currency.NewPairFromString("BTC-USDT")
+	futurePair, _ := currency.NewPairFromString("BTC-USD-SWAP")
+
+	tick, err := o.GetMarketTicker(pair)
+	if err != nil {
+		t.Errorf("GetMarketTicker err: %v", err)
+	} else {
+		t.Logf("%s tick: %#v", pair.String(), tick)
+	}
+	tick, err = o.GetMarketTicker(futurePair)
+	if err != nil {
+		t.Errorf("GetMarketTicker err: %v", err)
+	} else {
+		t.Logf("%s tick: %#v", futurePair.String(), tick)
 	}
 }
