@@ -2430,3 +2430,13 @@ func TestGetMarketTicker(t *testing.T) {
 		t.Logf("%s tick: %#v", futurePair.String(), tick)
 	}
 }
+
+func TestGetFundingRateHistory(t *testing.T) {
+	t.Parallel()
+
+	futurePair, _ := currency.NewPairFromString("BTC-USD-SWAP")
+	fds, err := o.GetFundingRateHistory(futurePair, 5)
+	if err != nil || len(fds) != 5 {
+		t.Errorf("GetFundingRateHistory err: %v", err)
+	}
+}

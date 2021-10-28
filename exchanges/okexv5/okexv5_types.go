@@ -127,3 +127,9 @@ type MarketTicker struct {
 	VolCcy24h string `json:"volCcy24h"`
 	Ts        string `json:"ts"`
 }
+
+type FundingRateHistory struct {
+	InstrumentID string  `json:"instId"`
+	FundingRate  float64 `json:"fundingRate,string"`
+	FundingTime  int64   `json:"fundingTime,string"`
+}

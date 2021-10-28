@@ -37,8 +37,9 @@ const (
 	okGroupETTSubsection     = ""
 	okGroupMarginSubsection  = ""
 	// v5 api endpoint
-	publicInstruments = "public/instruments"
-	accountPositions  = "account/positions"
+	publicInstruments  = "public/instruments"
+	accountPositions   = "account/positions"
+	fundingRateHistory = "public/funding-rate-history"
 
 	// Futures based endpoints
 	okGroupFuturePosition = "position"
@@ -698,6 +699,8 @@ func isArrayData(path string) bool {
 		return true
 	} else if strings.HasPrefix(path, accountPositions) {
 		return true
+	} else if strings.HasPrefix(path, fundingRateHistory) {
+		return true
 	}
 	return false
 }
@@ -761,5 +764,10 @@ func (o *OKEX) SetLeverage(pair currency.Pair, leverage string, mgnMode MarginMo
 
 func (o *OKEX) GetMarketTicker(pair currency.Pair) (resp MarketTicker, _ error) {
 	requestURL := fmt.Sprintf("market/ticker?instId=%s", pair.String())
+	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", requestURL, nil, &resp, true)
+}
+
+func (o *OKEX) GetFundingRateHistory(pair currency.Pair, limit int) (resp []FundingRateHistory, _ error) {
+	requestURL := fmt.Sprintf("%s?instId=%s&limit=%v", fundingRateHistory, pair.String(), limit)
 	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", requestURL, nil, &resp, true)
 }
