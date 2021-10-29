@@ -630,9 +630,9 @@ func (o *OKEX) SendHTTPRequest(ep exchange.URL, httpMethod, requestType, request
 		headers["OK-ACCESS-SIGN"] = crypto.Base64Encode(hmac)
 		headers["OK-ACCESS-TIMESTAMP"] = utcTime
 		headers["OK-ACCESS-PASSPHRASE"] = o.API.Credentials.ClientID
-		if o.API.IsTestnet {
-			headers["x-simulated-trading"] = "1"
-		}
+	}
+	if o.API.IsTestnet {
+		headers["x-simulated-trading"] = "1"
 	}
 
 	// Requests that have a 30+ second difference between the timestamp and the API service time will be considered expired or rejected
