@@ -2440,3 +2440,12 @@ func TestGetFundingRateHistory(t *testing.T) {
 		t.Errorf("GetFundingRateHistory err: %v", err)
 	}
 }
+
+func TestSetPositionMode(t *testing.T) {
+	t.Parallel()
+
+	err := o.SetPositionMode(LongShortMode)
+	if err != nil {
+		t.Errorf("SetPositionMode err: %v", err)
+	}
+}

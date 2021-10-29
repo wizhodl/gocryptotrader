@@ -133,3 +133,16 @@ type FundingRateHistory struct {
 	FundingRate  float64 `json:"fundingRate,string"`
 	FundingTime  int64   `json:"fundingTime,string"`
 }
+
+type AccountConfig struct {
+	UserID  string `json:"uid"`
+	AcctLv  string `json:"acctLv"`  // 账户层级 1：简单交易模式，2：单币种保证金模式，3：跨币种保证金模式
+	PosMode string `json:"posMode"` // 持仓方式 long_short_mode：双向持仓 net_mode：单向持仓 仅适用交割/永续
+}
+
+type PosMode string
+
+const (
+	LongShortMode PosMode = "long_short_mode"
+	NetMode       PosMode = "net_mode"
+)

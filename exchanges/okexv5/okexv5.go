@@ -760,8 +760,6 @@ func (o *OKEX) SetLeverage(pair currency.Pair, leverage string, mgnMode MarginMo
 	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodPost, "", "account/set-leverage", request, &resp, true)
 }
 
-// /api/v5/account/set-position-mode
-
 func (o *OKEX) GetMarketTicker(pair currency.Pair) (resp MarketTicker, _ error) {
 	requestURL := fmt.Sprintf("market/ticker?instId=%s", pair.String())
 	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", requestURL, nil, &resp, true)
@@ -770,4 +768,16 @@ func (o *OKEX) GetMarketTicker(pair currency.Pair) (resp MarketTicker, _ error) 
 func (o *OKEX) GetFundingRateHistory(pair currency.Pair, limit int) (resp []FundingRateHistory, _ error) {
 	requestURL := fmt.Sprintf("%s?instId=%s&limit=%v", fundingRateHistory, pair.String(), limit)
 	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", requestURL, nil, &resp, true)
+}
+
+func (o *OKEX) GetAccountConfig() (resp AccountConfig, _ error) {
+	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", "account/config", nil, &resp, true)
+}
+
+func (o *OKEX) SetPositionMode(posMode PosMode) (_ error) {
+	type posModeData struct {
+		PosMode PosMode `json:"posMode"`
+	}
+	request := posModeData{PosMode: posMode}
+	return o.SendHTTPRequest(exchange.RestSpot, http.MethodPost, "", "account/set-position-mode", request, &posModeData{}, true)
 }
