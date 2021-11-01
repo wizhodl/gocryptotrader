@@ -56,6 +56,7 @@ const (
 	cfuturesAccountInfo           = "/dapi/v1/account"
 	cfuturesChangeInitialLeverage = "/dapi/v1/leverage"
 	cfuturesChangeMarginType      = "/dapi/v1/marginType"
+	cfuturesPositionSideDual      = "/dapi/v1/positionSide/dual"
 	cfuturesModifyMargin          = "/dapi/v1/positionMargin"
 	cfuturesMarginChangeHistory   = "/dapi/v1/positionMargin/history"
 	cfuturesPositionInfo          = "/dapi/v1/positionRisk"
@@ -1256,6 +1257,18 @@ func (b *Binance) FuturesChangeInitialLeverage(symbol currency.Pair, leverage in
 	}
 	params.Set("leverage", strconv.FormatInt(leverage, 10))
 	return resp, b.SendAuthHTTPRequest(exchange.RestCoinMargined, http.MethodPost, cfuturesChangeInitialLeverage, params, cFuturesDefaultRate, &resp)
+}
+
+// FuturesChangeMarginType changes positionSide
+func (b *Binance) FuturesSetDualPositionSide(dualSidePosition bool) (GenericAuthResponse, error) {
+	var resp GenericAuthResponse
+	params := url.Values{}
+	if dualSidePosition {
+		params.Set("dualSidePosition", "true")
+	} else {
+		params.Set("dualSidePosition", "false")
+	}
+	return resp, b.SendAuthHTTPRequest(exchange.RestCoinMargined, http.MethodPost, cfuturesPositionSideDual, params, cFuturesDefaultRate, &resp)
 }
 
 // FuturesChangeMarginType changes margin type
