@@ -146,3 +146,16 @@ const (
 	LongShortMode PosMode = "long_short_mode"
 	NetMode       PosMode = "net_mode"
 )
+
+type AssetCurrency struct {
+	Currency    string `json:"ccy"`
+	Name        string `json:"name"`
+	Chain       string `json:"chain"`
+	CanDep      bool   `json:"canDep"`
+	CanWd       bool   `json:"canWd"`
+	CanInternal bool   `json:"canInternal"`
+	MinWd       string `json:"minWd"`
+	MinFee      string `json:"minFee"`
+	MaxFee      string `json:"maxFee"`
+	MainNet     bool   `json:"mainNet"`
+}

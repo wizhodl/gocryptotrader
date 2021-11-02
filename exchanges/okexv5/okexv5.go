@@ -40,6 +40,7 @@ const (
 	publicInstruments  = "public/instruments"
 	accountPositions   = "account/positions"
 	fundingRateHistory = "public/funding-rate-history"
+	assetCurrencies    = "asset/currencies"
 
 	// Futures based endpoints
 	okGroupFuturePosition = "position"
@@ -701,6 +702,8 @@ func isArrayData(path string) bool {
 		return true
 	} else if strings.HasPrefix(path, fundingRateHistory) {
 		return true
+	} else if strings.HasPrefix(path, assetCurrencies) {
+		return true
 	}
 	return false
 }
@@ -780,4 +783,8 @@ func (o *OKEX) SetPositionMode(posMode PosMode) (_ error) {
 	}
 	request := posModeData{PosMode: posMode}
 	return o.SendHTTPRequest(exchange.RestSpot, http.MethodPost, "", "account/set-position-mode", request, &posModeData{}, true)
+}
+
+func (o *OKEX) GetAssetCurrencies() (resp []AssetCurrency, _ error) {
+	return resp, o.SendHTTPRequest(exchange.RestSpot, http.MethodGet, "", assetCurrencies, nil, &resp, true)
 }
